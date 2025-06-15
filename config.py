@@ -70,7 +70,7 @@ class Config:
         self.nservers = nservers
         self.kvservers = [None] * nservers
         for srvid in range(nservers):
-            self.kvservers[srvid] = KVServer(self)
+            self.kvservers[srvid] = KVServer(self, srvid)
             kvsvc = Service(self.kvservers[srvid])
             srv = Server()
             srv.add_service(kvsvc)
@@ -85,7 +85,8 @@ class Config:
                 endnames = self.clerks[ck]
                 assert srvid < len(endnames)
                 self.net.enable(endnames[srvid], False)
-            self.running_servers.remove(srvid)
+            self.running_servers.discard(srvid)
+            print(f"Config.stop_server: running_servers now {self.running_servers}")
 
     def start_server(self, srvid):
         with self.mu:
@@ -96,6 +97,7 @@ class Config:
                 assert srvid < len(endnames)
                 self.net.enable(endnames[srvid], True)
             self.running_servers.add(srvid)
+            print(f"Config.start_server: running_servers now {self.running_servers}")
 
     def begin(self, description):
         print(f"{description} ...\n")
