@@ -9,11 +9,9 @@ def nrand() -> int:
     return random.getrandbits(62)
 
 class Clerk:
-    def __init__(self, servers: List[ClientEnd], cfg):
+    def __init__(self, servers: List[Any], cfg):
         self.servers = servers
         self.cfg = cfg
-
-        # Your definitions here.
 
     # Fetch the current value for a key.
     # Returns "" if the key does not exist.
@@ -27,7 +25,11 @@ class Clerk:
     # must match the declared types of the RPC handler function's
     # arguments in server.py.
     def get(self, key: str) -> str:
-        # You will have to modify this function.
+        args = GetArgs(key)
+        # Always use the first server (no sharding, no retries)
+        reply = self.servers[0].call("KVServer.Get", args)
+        if reply is not None and hasattr(reply, 'value'):
+            return reply.value if reply.value is not None else ""
         return ""
 
     # Shared by Put and Append.
@@ -40,7 +42,10 @@ class Clerk:
     # must match the declared types of the RPC handler function's
     # arguments in server.py.
     def put_append(self, key: str, value: str, op: str) -> str:
-        # You will have to modify this function.
+        args = PutAppendArgs(key, value)
+        reply = self.servers[0].call(f"KVServer.{op}", args)
+        if reply is not None and hasattr(reply, 'value'):
+            return reply.value if reply.value is not None else ""
         return ""
 
     def put(self, key: str, value: str):
